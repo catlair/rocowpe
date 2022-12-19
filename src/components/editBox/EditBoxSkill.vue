@@ -3,9 +3,7 @@ import { useLocalStorage } from '@vueuse/core';
 import { onMounted, ref } from 'vue';
 import { useFetch } from '../../http';
 
-const { data, execute } = useFetch(`angel/config`, { immediate: false })
-  .get()
-  .json();
+const { data, execute } = useFetch(`/`, { immediate: false }).get().json();
 
 const emit = defineEmits(['click']);
 

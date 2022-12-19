@@ -30,13 +30,15 @@ const skillMap: { id: string; value: string }[] = JSON.parse(
 );
 
 let cur = 1;
-const skillUse: string[][] = [];
+let skillUse: string[][] = [];
 // 道具
-const itemUse: string[] = [];
+let itemUse: string[] = [];
 watch(
   () => props.code,
   () => {
     cur = 1;
+    skillUse = [];
+    itemUse = [];
     let value = `
 封包数量┆16┆统一间隔┆200┆回合间隔┆0┆发送次数┆10┆返回剧院┆False┆\r\n封包┆GET/cgi-bin/mystery_uncharted?cmd=1&index=1&unkown=&skey=&platfrom=2┆间隔┆0┆\r\n`;
     props.code.split('\n').forEach((line) => {
@@ -55,7 +57,10 @@ watch(
           16
         )
           .toUpperCase()
-          .padStart(6, '0')}┆间隔┆0┆\r\n封包┆95270000000B000600002710000000000000000400000000┆间隔┆0┆\r\n`;
+          .padStart(
+            6,
+            '0'
+          )}┆间隔┆0┆\r\n封包┆95270000000B000600002710000000000000000400000000┆间隔┆0┆\r\n`;
         skillUse[cur] ? skillUse[cur].push(skill) : (skillUse[cur] = [skill]);
         return;
       }
@@ -126,7 +131,8 @@ watch(
       )}】推荐精灵:暂无推荐\r\n`;
     });
     const itemUseSet = [...new Set(itemUse)];
-    skillUseString += `道具要求【${itemUseSet.join('/')}】\r\n`;
+    itemUseSet.length &&
+      (skillUseString += `道具要求【${itemUseSet.join('/')}】\r\n`);
     wpe.value =
       `<Hint>下面是神辅生成的脚本说明:\r\n${skillUseString}\r\n</Hint>` + value;
   }

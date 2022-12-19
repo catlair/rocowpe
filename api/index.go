@@ -1,61 +1,58 @@
-package main
+package handler
 
 import (
 	"bytes"
 	"compress/zlib"
+	"encoding/json"
 	"io"
 	"io/ioutil"
-	"mime"
 	"net/http"
 	"regexp"
-
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
 )
 
-var r = gin.Default()
-
-func index() *gin.Engine {
-	//静态文件路径
-	const staticPath = `dist/`
-	mime.AddExtensionType(".js", "application/javascript")
-	r.Static("/assets", staticPath+"assets")
-	r.StaticFile("/", staticPath+"index.html")
-	r.StaticFile("/vue.svg", staticPath+"vue.svg")
-	// 关键点【解决页面刷新404的问题】
-	r.NoRoute(func(c *gin.Context) {
-	})
-	return r
+type Result struct {
+	Data struct {
+		Skill []interface{} `json:"skill"`
+	} `json:"data"`
 }
 
-func main() {
-	index()
+type ErrorResult struct {
+	Msg string `json:"msg"`
+}
 
-	r.Use(cors.Default())
-	api := r.Group("/api")
-
-	{
-		api.GET("/angel/config", angelConfig)
+func (d Result) ToJson() []byte {
+	b, err := json.Marshal(d)
+	if err != nil {
+		panic(err)
 	}
-
-	r.Run()
+	return b
 }
 
-func angelConfig(ctx *gin.Context) {
-	// 请求 https://res.17roco.qq.com/conf/Angel.config
+func (d ErrorResult) ToJson() []byte {
+	b, err := json.Marshal(d)
+	if err != nil {
+		panic(err)
+	}
+	return b
+}
+
+func AngelConfig(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	angelConfig, err := http.Get("https://res.17roco.qq.com/conf/Angel.config")
 	if err != nil {
-		ctx.JSON(500, gin.H{
-			"error": err.Error(),
-		})
+		w.WriteHeader(500)
+		errRes := ErrorResult{}
+		errRes.Msg = err.Error()
+		w.Write(errRes.ToJson())
 		return
 	}
 	defer angelConfig.Body.Close()
 	buf, err := ioutil.ReadAll(angelConfig.Body)
 	if err != nil {
-		ctx.JSON(500, gin.H{
-			"error": err.Error(),
-		})
+		w.WriteHeader(500)
+		errRes := ErrorResult{}
+		errRes.Msg = err.Error()
+		w.Write(errRes.ToJson())
 		return
 	}
 	// 删除前 7 个字节
@@ -63,11 +60,10 @@ func angelConfig(ctx *gin.Context) {
 	// 解压
 	result := DoZlibUnCompress(buf)
 	result1 := matchSpiritSkillDes(string(result))
-	ctx.JSON(200, gin.H{
-		"data": gin.H{
-			"skill": matchSpiritSkill(result1),
-		},
-	})
+	w.WriteHeader(200)
+	d := Result{}
+	d.Data.Skill = matchSpiritSkill(result1)
+	w.Write(d.ToJson())
 }
 
 func DoZlibUnCompress(compressSrc []byte) []byte {
