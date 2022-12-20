@@ -8,9 +8,11 @@ const buttons = ['逃跑', '使用小PP', '使用中PP', '使用大PP', '使用�
 </script>
 
 <template>
-  <el-button v-for="btn of buttons" @click="() => handleClick(btn)">{{
-    btn
-  }}</el-button>
+  <el-space wrap>
+    <el-button v-for="btn of buttons" @click="() => handleClick(btn)">{{
+      btn
+    }}</el-button>
+  </el-space>
 </template>
 
 <style scoped></style>

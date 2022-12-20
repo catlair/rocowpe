@@ -41,7 +41,7 @@ function handleClick() {
 </script>
 
 <template>
-  <el-space direction="horizontal" alignment="start" :size="30">
+  <el-space wrap direction="horizontal" alignment="start" :size="30">
     <el-select
       v-model="value"
       @change="handleChange"
@@ -55,7 +55,7 @@ function handleClick() {
         :value="item.value"
       />
     </el-select>
-    <el-input v-model="code" style="width: 80px"></el-input>
+    <el-input-number v-model="code"></el-input-number>
     <el-button @click="handleClick">添加</el-button>
   </el-space>
 </template>

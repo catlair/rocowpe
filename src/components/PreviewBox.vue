@@ -2,6 +2,7 @@
 import { ref, watch } from 'vue';
 import { num2Chinese, radixConvert } from '../utils';
 import str2gbk from 'str2gbk';
+import { downloadFile } from '../utils';
 
 const wpe = ref('');
 
@@ -139,24 +140,36 @@ watch(
 );
 
 function handleClick() {
-  const blob = new Blob([str2gbk(wpe.value)], {
-    type: 'text/plain',
-  });
-  const a = document.createElement('a');
-  a.download = 'wpe.txt';
-  a.href = URL.createObjectURL(blob);
-  a.click();
+  if (!wpe.value) {
+    return;
+  }
+  downloadFile(str2gbk(wpe.value), 'wpe.txt');
+  ElMessage.info('等待下载');
 }
 </script>
 
 <template>
-  <el-input
-    v-model="wpe"
-    :autosize="{ minRows: 10, maxRows: 30 }"
-    type="textarea"
-    placeholder="Please input"
-  />
-  <el-button @click="handleClick" style="margin-top: 10px">下载</el-button>
+  <el-row :gutter="20">
+    <el-button
+      v-for="i of 5"
+      style="
+        visibility: hidden;
+        height: 1px;
+        padding-top: 0;
+        padding-bottom: 0;
+        margin-top: 0;
+        margin-bottom: 0;
+      "
+      >i</el-button
+    >
+    <el-input
+      v-model="wpe"
+      :autosize="{ minRows: 10, maxRows: 30 }"
+      type="textarea"
+      placeholder="Please input"
+    />
+    <el-button @click="handleClick" style="margin-top: 10px">下载</el-button>
+  </el-row>
 </template>
 
 <style scoped></style>

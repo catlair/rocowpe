@@ -2,20 +2,12 @@
 import { useLocalStorage } from '@vueuse/core';
 import { onMounted, ref } from 'vue';
 import { useFetch } from '../../http';
+import { SkillFetchItem, SkillItem } from '../../types/skill';
+import { filterInvalidSkill } from './utils';
 
-const { data, execute } = useFetch(`/`, { immediate: false }).get().json();
+const { data, execute } = useFetch(`/skill`, { immediate: false }).get().json();
 
 const emit = defineEmits(['click']);
-
-interface SkillItem {
-  id: string;
-  value: string;
-}
-
-interface SkillFetchItem {
-  id: string;
-  name: string;
-}
 
 const state = ref('');
 const skills = ref<SkillItem[]>([]);
@@ -72,30 +64,15 @@ const handleSkills = () => {
     skills.value = [];
     throw new Error(`请求失败`);
   }
-  const skillsValue = skillData
-    .map((item) => {
+  const skillsValue = filterInvalidSkill(
+    skillData.map((item) => {
       return {
         value: item.name,
         id: item.id,
       };
     })
-    .filter((item) => {
-      const id = Number(item.id);
-      if (Number.isNaN(id)) {
-        return false;
-      }
-      if (id < 0 || id > 5000) {
-        return false;
-      }
-      const excludes = [2171, 2172, 2173, 2281, 2282, 2283, 2284];
-      if (excludes.includes(id)) {
-        return false;
-      }
-      if (item.value.endsWith('AI') || item.value.includes('测试')) {
-        return false;
-      }
-      return true;
-    });
+  );
+
   if (skillsValue.length > 2000) {
     window.localStorage.setItem('skill', JSON.stringify(skillsValue));
     skills.value = skillsValue;
@@ -139,28 +116,30 @@ function handleClick(skill: SkillItem) {
 
 <template>
   <el-row :gutter="20">
-    <el-button @click="fetchSkills">强制更新数据库</el-button>
+    <el-space wrap>
+      <el-autocomplete
+        v-model="state"
+        :fetch-suggestions="querySearchAsync"
+        placeholder="需要使用的技能"
+        @select="handleSelect"
+      />
+      <el-button @click="fetchSkills">强制更新数据库</el-button>
+    </el-space>
   </el-row>
   <el-row :gutter="20">
-    <el-autocomplete
-      v-model="state"
-      :fetch-suggestions="querySearchAsync"
-      placeholder="需要使用的技能"
-      @select="handleSelect"
-    />
-  </el-row>
-  <el-row :gutter="20">
-    <el-tag
-      v-for="tag in skillTags"
-      :key="tag.id"
-      class="mx-1"
-      closable
-      style="margin-left: 5px; cursor: pointer"
-      @close="handleClose(tag.value)"
-      @click="() => handleClick(tag)"
-    >
-      {{ tag.value }}
-    </el-tag>
+    <el-space wrap>
+      <el-tag
+        v-for="tag in skillTags"
+        :key="tag.id"
+        class="mx-1"
+        closable
+        style="margin-left: 5px; cursor: pointer"
+        @close="handleClose(tag.value)"
+        @click="() => handleClick(tag)"
+      >
+        {{ tag.value }}
+      </el-tag>
+    </el-space>
   </el-row>
 </template>
 

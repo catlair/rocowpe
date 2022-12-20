@@ -9,25 +9,22 @@ function hanldeChange(value: string) {
   console.log(value);
   code.value = value;
 }
+
+// 获取视口宽度
+const width = ref(window.innerWidth);
 </script>
 
 <template>
-  <el-row :gutter="20">
+  <el-row v-if="width > 600" :gutter="20">
     <el-col :span="12"><EditBox @change="hanldeChange" /></el-col>
     <el-col :span="12"><PreviewBox :code="code" /></el-col>
   </el-row>
+  <el-row v-else :gutter="20">
+    <el-space direction="vertical">
+      <el-col :span="24"><EditBox @change="hanldeChange" /></el-col>
+      <el-col :span="24"><PreviewBox :code="code" /></el-col>
+    </el-space>
+  </el-row>
 </template>
 
-<style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
-}
-</style>
+<style scoped></style>
